@@ -204,16 +204,41 @@ class HtmlToolbarHelper extends ToolbarHelper {
  * @return string Rendered Html link or '' if the query is not a select/describe
  */
 	public function explainLink($sql, $connection) {
-		if (!preg_match('/^[\s()]*SELECT/i', $sql)) {
-			return '';
+		$links = Configure::read('DebugKit.explain.links');
+		if (!$links) {
+			$links = array(
+				array(
+					'driver' => '/(Mysql|Postgres)$/',
+					'url' => array(
+						'plugin' => 'debug_kit',
+						'controller' => 'toolbar_access',
+						'action' => 'sql_explain'
+					),
+					'query' => '/^[\s()]*SELECT/i'
+				)
+			);
 		}
+		$Source = ConnectionManager::getDataSource($connection);
+		$driver = isset($Source->config['datasource']) ? $Source->config['datasource'] : $Source->config['driver'];
+		foreach ($links as $linkOptions) {
+			if (preg_match($linkOptions['driver'], $driver) && preg_match($linkOptions['query'], $sql)) {
+				return $this->_explainLink($sql, $connection, $linkOptions['url']);
+			}
+		}
+		return '';
+	}
+
+/**
+ * Generates a SQL explain link for a given query
+ *
+ * @param string $sql SQL query string you want an explain link for.
+ * @param string $connection
+ * @param array $url
+ * @return string Rendered Html link
+ */
+	protected function _explainLink($sql, $connection, $url) {
 		$sql = str_replace(array("\n", "\t"), ' ', $sql);
 		$hash = Security::hash($sql . $connection, 'sha1', true);
-		$url = array(
-			'plugin' => 'debug_kit',
-			'controller' => 'toolbar_access',
-			'action' => 'sql_explain'
-		);
 		foreach (Router::prefixes() as $prefix) {
 			$url[$prefix] = false;
 		}
