@@ -16,7 +16,6 @@
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-$headers = array('Query', 'Affected', 'Num. rows', 'Took (ms)', 'Actions');
 if (isset($debugKitInHistoryMode)) {
 	$content = $this->Toolbar->readCache('sql_log', $this->request->params['pass'][0]);
 }
@@ -34,29 +33,26 @@ if (isset($debugKitInHistoryMode)) {
 			else:
 				$queryLog = $content[$dbName];
 			endif;
-			if (empty($queryLog['queries'])):
-				if (Configure::read('debug') < 2):
-					echo ' ' . __d('debug_kit', 'No query logs when debug < 2.');
-				else:
-					echo ' ' . __d('debug_kit', 'No query logs.');
-				endif;
-			else:
-				echo '<h5>';
-				echo __d(
-					'debug_kit',
-					'Total Time: %s ms <br />Total Queries: %s queries',
-					$queryLog['time'],
-					$queryLog['count']
-				);
-				echo '</h5>';
-				echo $this->Toolbar->table($queryLog['queries'], $headers, array('title' => 'SQL Log ' . $dbName));
+			echo '<h5>';
+			echo __d(
+				'debug_kit',
+				'Total Time: %s ms <br />Total Queries: %s queries',
+				$queryLog['time'],
+				$queryLog['count']
+			);
+			echo '</h5>';
+			if ($queryLog['queries'] && array_key_exists('error', $queryLog['queries'][0])) {
+				$headers = array('Query', 'Error', 'Affected', 'Num. rows', 'Took (ms)', 'Actions');
+			} else {
+				$headers = array('Query', 'Affected', 'Num. rows', 'Took (ms)', 'Actions');
+			}
+			echo $this->Toolbar->table($queryLog['queries'], $headers, array('title' => 'SQL Log ' . $dbName));
 			?>
 		<h4><?php echo __d('debug_kit', 'Query Explain:'); ?></h4>
 		<div id="sql-log-explain-<?php echo $dbName ?>">
 			<a id="debug-kit-explain-<?php echo $dbName ?>"> </a>
 			<p><?php echo __d('debug_kit', 'Click an "Explain" link above, to see the query explanation.'); ?></p>
 		</div>
-		<?php endif; ?>
 	</div>
 	<?php endforeach; ?>
 <?php else:
