@@ -53,7 +53,11 @@ class SqlLogPanel extends DebugPanel {
 				$driver = $db->config['datasource'];
 			}
 			$explain = false;
-			$isExplainable = (preg_match('/(Mysql|Postgres)$/', $driver));
+			$pattern = Configure::read('DebugKit.explain.driverPattern');
+			if (!$pattern) {
+				$pattern = '/(Mysql|Postgres)$/';
+			}
+			$isExplainable = preg_match($pattern, $driver);
 			if ($isExplainable) {
 				$explain = true;
 			}
