@@ -237,7 +237,7 @@ class HtmlToolbarHelper extends ToolbarHelper {
  * @return string Rendered Html link
  */
 	protected function _explainLink($sql, $connection, $url) {
-		$sql = str_replace(array("\n", "\t"), ' ', $sql);
+//		$sql = str_replace(array("\n", "\t"), ' ', $sql);
 		$hash = Security::hash($sql . $connection, 'sha1', true);
 		foreach (Router::prefixes() as $prefix) {
 			$url[$prefix] = false;
